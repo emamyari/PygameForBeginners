@@ -25,7 +25,7 @@ pygame.time.set_timer(pipeEvent, 1000)
 def generatePipeRect():
     rand_pos=random.randrange(350,600)
     pipRect=pipe.get_rect(midtop=(400,rand_pos))
-    pipRectUp=pipe.get_rect(midbottom=(400,rand_pos-300))
+    pipRectUp=pipe.get_rect(midbottom=(400,rand_pos-150))
     return pipRect,pipRectUp
 
 def movePipe(pipes):
@@ -35,11 +35,19 @@ def movePipe(pipes):
 
 def drawPipes(pipes):
     for piperect in pipes:
-        if piperect.bottom>400:
+        if piperect.bottom>450:
             win.blit(pipe,piperect)
         else:
             revImage=pygame.transform.rotate(pipe,180)
             win.blit(revImage,piperect)
+
+def checkCollision(pipes):
+    for pipeRect in pipes:
+        if birdRect.colliderect(pipeRect):
+            print("colllllllllllllllll")
+        if birdRect.top<=-20 or birdRect.bottom>=600:
+            print("top bot col ")
+
 run = True
 while run:
     for event in pygame.event.get():
@@ -52,6 +60,8 @@ while run:
                 birdMove -= 5
         if event.type==pipeEvent:
             pipeList.extend(generatePipeRect())
+
+    checkCollision(pipeList)
 
     floorX -= 1
     birdMove += grav
