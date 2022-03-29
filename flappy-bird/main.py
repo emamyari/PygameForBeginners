@@ -1,6 +1,7 @@
 import sys
 
 import pygame
+import random
 
 pygame.init()
 fps = 90
@@ -22,8 +23,10 @@ pipeEvent = pygame.USEREVENT
 pygame.time.set_timer(pipeEvent, 1000)
 
 def generatePipeRect():
-    pipRect=pipe.get_rect(midtop=(300,500))
-    return pipRect
+    rand_pos=random.randrange(350,600)
+    pipRect=pipe.get_rect(midtop=(400,rand_pos))
+    pipRectUp=pipe.get_rect(midbottom=(400,rand_pos-300))
+    return pipRect,pipRectUp
 
 def movePipe(pipes):
     for pipeRect in pipes:
@@ -32,11 +35,11 @@ def movePipe(pipes):
 
 def drawPipes(pipes):
     for piperect in pipes:
-        win.blit(pipe,piperect)
-
-
-
-
+        if piperect.bottom>400:
+            win.blit(pipe,piperect)
+        else:
+            revImage=pygame.transform.rotate(pipe,180)
+            win.blit(revImage,piperect)
 run = True
 while run:
     for event in pygame.event.get():
@@ -48,7 +51,7 @@ while run:
                 birdMove = 0
                 birdMove -= 5
         if event.type==pipeEvent:
-            pipeList.append(generatePipeRect())
+            pipeList.extend(generatePipeRect())
 
     floorX -= 1
     birdMove += grav
