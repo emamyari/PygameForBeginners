@@ -1,4 +1,5 @@
 import sys
+import time
 
 import pygame
 import random
@@ -20,11 +21,20 @@ pipeList = []
 game_status = True
 score=0
 activeScore=True
+highScore=0
+
+
 
 
 bg = pygame.transform.scale(pygame.image.load("assets/img/bg2.png"), (width, height))
 floorImage = pygame.transform.scale(pygame.image.load('assets/img/floor.png'), (width, 200))
 pipe = pygame.image.load("assets/img/pipe_green.png")
+
+gameOverImage=pygame.image.load("assets/img/message.png")
+gameOverImageRect=gameOverImage.get_rect(center=(190,300))
+
+winSound=pygame.mixer.Sound('assets/sound/smb_stomp.wav')
+gameOverSound=pygame.mixer.Sound('assets/sound/smb_mariodie.wav')
 
 bird_up = pygame.image.load("assets/img/red_bird_up_flap.png")
 bird_mid = pygame.image.load("assets/img/red_bird_mid_flap.png")
@@ -66,10 +76,18 @@ def drawPipes(pipes):
 
 
 def checkCollision(pipes):
+    # global activeScore
     for pipeRect in pipes:
         if birdRect.colliderect(pipeRect):
+            # activeScore=True
+            gameOverSound.play()
+            time.sleep(3)
             return False
         if birdRect.top <= -20 or birdRect.bottom >= 600:
+            # activeScore=True
+            print(pipes)
+            gameOverSound.play()
+            time.sleep(3)
             return False
     return True
 
@@ -79,12 +97,24 @@ def birdAnime():
     newBirdRect = newBird.get_rect(center=(50, birdRect.centery))
     return newBird, newBirdRect
 
-def displayScore():
-    text=font.render(str(score),False,(255,255,255))
-    textRect=text.get_rect(center=(185,100))
-    win.blit(text,textRect)
+def displayScore(status):
+    if(status=="active"):
+        text=font.render(str(score),True,(255,255,255))
+        textRect=text.get_rect(center=(185,100))
+        win.blit(text,textRect)
+    if status=="game over":
+        #score
+        text = font.render("Score: "+str(score), True, (255, 255, 255))
+        textRect = text.get_rect(center=(185, 100))
+        win.blit(text, textRect)
+        #high score
+        text2 = font.render("High Score: "+str(highScore), True, (255, 255, 255))
+        textRect2 = text2.get_rect(center=(190, 500))
+        win.blit(text2, textRect2)
+
 
 def updateScore():
+    global highScore
     global score,activeScore
     for pipeRect in pipeList:
         if 40<pipeRect.centerx<60 and activeScore:
@@ -92,7 +122,8 @@ def updateScore():
             activeScore=False
         if pipeRect.centerx<40:
             activeScore=True
-
+    if score>highScore:
+        highScore=score
 run = True
 while run:
     for event in pygame.event.get():
@@ -101,11 +132,13 @@ while run:
             sys.exit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
+                winSound.play()
                 birdMove = 0
                 birdMove -= 5
             if event.key == pygame.K_t:
                 game_status = True
                 birdMove = 0
+                score=0
                 pipeList.clear()
                 birdRect.center = (50, 300)
 
@@ -130,8 +163,11 @@ while run:
         win.blit(bird, birdRect)
         win.blit(floorImage, (floorX, 650))
         win.blit(floorImage, (floorX + width, 650))
-        displayScore()
         updateScore()
+        displayScore("active")
+    else:
+        displayScore("game over")
+        win.blit(gameOverImage,gameOverImageRect)
 
 
     if floorX <= -400:
